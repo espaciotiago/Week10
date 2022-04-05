@@ -17,6 +17,7 @@ import tech.yeswecode.week10.utils.HTTPSWebUtilDomi
 import tech.yeswecode.week10.utils.UsersServiceProvider
 import tech.yeswecode.week10.utils.VolleyServiceProvider
 import java.util.*
+import kotlin.collections.ArrayList
 
 class MainActivity : AppCompatActivity() {
 
@@ -123,14 +124,19 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun getUsersWithProvider() {
-        binding.textView.text = ""
-        val url = "${Constants.BASE_URL}/users.json"
-        UsersServiceProvider().getUsers(this, url, {
-            for(user in it) {
+
+        val successCallback = { users: ArrayList<User> ->
+            for(user in users) {
                 binding.textView.append(user.toString())
             }
-        }) {
-            binding.textView.append(it)
         }
+
+        val errorCallback = { error: String ->
+            binding.textView.append(error)
+        }
+
+        binding.textView.text = ""
+        val url = "${Constants.BASE_URL}/users.json"
+        UsersServiceProvider().getUsers(this, url, successCallback, errorCallback)
     }
 }
