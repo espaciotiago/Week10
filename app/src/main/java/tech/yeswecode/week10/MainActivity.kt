@@ -14,6 +14,8 @@ import tech.yeswecode.week10.models.User
 import tech.yeswecode.week10.models.Notes
 import tech.yeswecode.week10.utils.Constants
 import tech.yeswecode.week10.utils.HTTPSWebUtilDomi
+import tech.yeswecode.week10.utils.UsersServiceProvider
+import tech.yeswecode.week10.utils.VolleyServiceProvider
 import java.util.*
 
 class MainActivity : AppCompatActivity() {
@@ -39,7 +41,9 @@ class MainActivity : AppCompatActivity() {
         }
 
         binding.getUsersBtn.setOnClickListener {
-            getUsers()
+            //getUsers()
+            //getUsersWithVolley()
+            getUsersWithProvider()
         }
     }
 
@@ -87,16 +91,46 @@ class MainActivity : AppCompatActivity() {
         lifecycleScope.launch(Dispatchers.IO) {
             val url = "${Constants.BASE_URL}/users.json"
             val response = HTTPSWebUtilDomi().GETRequest(url)
-            Log.e("RESPONSE", response)
             val jsonObject = JSONObject(response)
 
             for(key in jsonObject.keys()){
                 val itemStr = jsonObject.get(key).toString()
-                val notes = Gson().fromJson(itemStr, User::class.java)
+                val user = Gson().fromJson(itemStr, User::class.java)
                 withContext(Dispatchers.Main) {
-                    binding.textView.append(notes.toString())
+                    binding.textView.append(user.toString())
                 }
             }
+        }
+    }
+
+    private fun getUsersWithVolley() {
+        binding.textView.text = ""
+        val url = "${Constants.BASE_URL}/users.json"
+        VolleyServiceProvider().get(
+            this,
+            url,
+            success = {
+                val jsonObject = JSONObject(it)
+                for(key in jsonObject.keys()){
+                    val itemStr = jsonObject.get(key).toString()
+                    val user = Gson().fromJson(itemStr, User::class.java)
+                    binding.textView.append(user.toString())
+                }
+            }
+        ) {
+            binding.textView.append(it)
+        }
+    }
+
+    private fun getUsersWithProvider() {
+        binding.textView.text = ""
+        val url = "${Constants.BASE_URL}/users.json"
+        UsersServiceProvider().getUsers(this, url, {
+            for(user in it) {
+                binding.textView.append(user.toString())
+            }
+        }) {
+            binding.textView.append(it)
         }
     }
 }
